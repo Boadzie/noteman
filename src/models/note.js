@@ -9,9 +9,22 @@ const noteSchema = new mongoose.Schema(
       required: true
     },
     author: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true
-    }
+    },
+    // add the favoriteCount property
+    favoriteCount: {
+      type: Number,
+      default: 0
+    },
+    // add the favoritedBy property
+    favoritedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ]
   },
   {
     timestamps: true
