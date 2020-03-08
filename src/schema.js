@@ -12,6 +12,12 @@ module.exports = gql`
     favoritedBy: [User!]
   }
 
+  type NoteFeed {
+    notes: [Note]!
+    cursor: String!
+    hasNextPage: Boolean!
+  }
+
   type User {
     id: ID!
     username: String!
@@ -27,6 +33,8 @@ module.exports = gql`
     user(username: String!): User
     users: [User!]!
     me: User!
+    # add noteFeed to our existing queries
+    noteFeed(cursor: String): NoteFeed
   }
   type Mutation {
     newNote(content: String!): Note!
