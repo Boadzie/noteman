@@ -1,16 +1,12 @@
 const express = require('express');
-// first require the package at the top of the file
-const helmet = require('helmet');
-// first require the package at the top of the file
-const cors = require('cors');
 const { ApolloServer } = require('apollo-server-express');
-require('dotenv').config();
 const jwt = require('jsonwebtoken');
-// import the modules at the top of the file
+const helmet = require('helmet');
+const cors = require('cors');
 const depthLimit = require('graphql-depth-limit');
 const { createComplexityLimitRule } = require('graphql-validation-complexity');
+require('dotenv').config();
 
-// Local module imports
 const db = require('./db');
 const models = require('./models');
 const typeDefs = require('./schema');
@@ -19,11 +15,15 @@ const resolvers = require('./resolvers');
 // Run our server on a port specified in our .env file or port 4000
 const port = process.env.PORT || 4000;
 const DB_HOST = process.env.DB_HOST;
+
 const app = express();
-app.use(helmet()); //adding the helmet middleware
-// add the middleware after app.use(helmet());
-app.use(cors());
+
 db.connect(DB_HOST);
+
+// Security middleware
+app.use(helmet());
+// CORS middleware
+app.use(cors());
 
 // get the user info from a JWT
 const getUser = token => {
@@ -38,22 +38,25 @@ const getUser = token => {
   }
 };
 
-// update our ApolloServer code to include validationRules
+// Apollo Server setup
+// updated to include `validationRules`
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   validationRules: [depthLimit(5), createComplexityLimitRule(1000)],
-  context: async ({ req }) => {
+  context: ({ req }) => {
     // get the user token from the headers
     const token = req.headers.authorization;
     // try to retrieve a user with the token
-    const user = await getUser(token);
+    const user = getUser(token);
     // add the db models and the user to the context
     return { models, user };
   }
 });
-// Apply the Apollo GraphQL middleware and set the path to/api
+
+// Apply the Apollo GraphQL middleware and set the path to /api
 server.applyMiddleware({ app, path: '/api' });
+
 app.listen({ port }, () =>
   console.log(
     `GraphQL Server running at http://localhost:${port}${server.graphqlPath}`
